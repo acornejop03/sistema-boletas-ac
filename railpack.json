@@ -1,0 +1,8 @@
+{
+  "build": {
+    "phpExtensions": ["soap", "gd", "pdo_mysql", "bcmath", "intl", "zip"]
+  },
+  "deploy": {
+    "startCommand": "bash start.sh"
+  }
+}
