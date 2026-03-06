@@ -17,16 +17,23 @@
 </div>
 
 <div class="card">
+    <div class="card-hdr">
+        <div class="card-hdr-icon blue"><i class="bi bi-people"></i></div>
+        <div>
+            <div class="card-hdr-title">Listado de Usuarios</div>
+            <div class="card-hdr-sub">{{ $users->count() }} usuario(s) registrado(s)</div>
+        </div>
+    </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
                     <th>Usuario</th>
-                    <th>Email</th>
+                    <th class="d-none d-sm-table-cell">Email</th>
                     <th>Rol</th>
-                    <th>Teléfono</th>
-                    <th>Estado</th>
-                    <th>Último acceso</th>
+                    <th class="d-none d-lg-table-cell">Teléfono</th>
+                    <th class="d-none d-md-table-cell">Estado</th>
+                    <th class="d-none d-lg-table-cell">Último acceso</th>
                     <th class="text-end pe-3">Acciones</th>
                 </tr>
             </thead>
@@ -44,10 +51,12 @@
                                 @if($u->id === auth()->id())
                                 <small class="text-primary" style="font-size:0.7rem"><i class="bi bi-person-check me-1"></i>Tú</small>
                                 @endif
+                                {{-- Show email below name on mobile --}}
+                                <div class="d-sm-none text-muted" style="font-size:0.72rem">{{ $u->email }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="text-muted" style="font-size:0.84rem">{{ $u->email }}</td>
+                    <td class="d-none d-sm-table-cell text-muted" style="font-size:0.84rem">{{ $u->email }}</td>
                     <td>
                         @foreach($u->roles as $rol)
                         @php
@@ -59,15 +68,15 @@
                         </span>
                         @endforeach
                     </td>
-                    <td class="text-muted" style="font-size:0.84rem">{{ $u->telefono ?? '—' }}</td>
-                    <td>
+                    <td class="d-none d-lg-table-cell text-muted" style="font-size:0.84rem">{{ $u->telefono ?? '—' }}</td>
+                    <td class="d-none d-md-table-cell">
                         @if($u->activo)
                         <span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>
                         @else
                         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inactivo</span>
                         @endif
                     </td>
-                    <td class="text-muted" style="font-size:0.8rem">
+                    <td class="d-none d-lg-table-cell text-muted" style="font-size:0.8rem">
                         {{ $u->ultimo_acceso?->format('d/m/Y H:i') ?? 'Nunca' }}
                     </td>
                     <td class="text-end pe-3">
@@ -106,7 +115,9 @@
         </table>
     </div>
     @if($users->hasPages())
-    <div class="card-footer">{{ $users->links() }}</div>
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+        {{ $users->links() }}
+    </div>
     @endif
 </div>
 @endsection

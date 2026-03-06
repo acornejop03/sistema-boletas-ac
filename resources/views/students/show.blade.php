@@ -6,7 +6,7 @@
 @endsection
 @section('content')
 <div class="row g-3">
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <div class="card text-center">
             <div class="card-body py-4">
                 <div class="rounded-circle d-inline-flex align-items-center justify-content-center fw-bold text-white mb-3"
@@ -34,7 +34,7 @@
         </a>
         @endcan
     </div>
-    <div class="col-md-9">
+    <div class="col-12 col-md-9">
         <ul class="nav nav-tabs mb-3" id="studentTabs">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-datos">Datos</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-matriculas">Matrículas</a></li>

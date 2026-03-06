@@ -16,7 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'check_role' => \App\Http\Middleware\CheckRole::class,
+            'active'     => \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
+
+        // Verificar que el usuario sigue activo en cada request autenticado
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -10,10 +10,10 @@ class PdfService
 {
     public function generate(Sale $sale): string
     {
-        $sale->load(['company', 'student', 'items', 'payment']);
+        $sale->load(['company', 'student', 'items', 'payment', 'user']);
 
         $pdf = Pdf::loadView('boleta.academia', ['sale' => $sale]);
-        $pdf->setPaper([0, 0, 226.77, 595.28]); // ~80mm ancho
+        $pdf->setPaper('A4', 'portrait');
 
         $pdfPath = "sunat/pdf/{$sale->serie}-{$sale->correlativo}.pdf";
         Storage::put($pdfPath, $pdf->output());
@@ -26,17 +26,17 @@ class PdfService
 
     public function download(Sale $sale)
     {
-        $sale->load(['company', 'student', 'items', 'payment']);
+        $sale->load(['company', 'student', 'items', 'payment', 'user']);
         $pdf = Pdf::loadView('boleta.academia', ['sale' => $sale]);
-        $pdf->setPaper([0, 0, 226.77, 595.28]);
+        $pdf->setPaper('A4', 'portrait');
         return $pdf->download($sale->numero_comprobante . '.pdf');
     }
 
     public function stream(Sale $sale)
     {
-        $sale->load(['company', 'student', 'items', 'payment']);
+        $sale->load(['company', 'student', 'items', 'payment', 'user']);
         $pdf = Pdf::loadView('boleta.academia', ['sale' => $sale]);
-        $pdf->setPaper([0, 0, 226.77, 595.28]);
+        $pdf->setPaper('A4', 'portrait');
         return $pdf->stream($sale->numero_comprobante . '.pdf');
     }
 }

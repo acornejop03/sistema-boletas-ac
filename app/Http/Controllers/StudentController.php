@@ -31,7 +31,14 @@ class StudentController extends Controller
 
         $students = $query->with(['enrollments'])->orderBy('apellido_paterno')->paginate(20)->withQueryString();
 
-        return view('students.index', compact('students'));
+        $stats = [
+            'total'         => Student::count(),
+            'activos'       => Student::where('activo', true)->count(),
+            'con_matricula' => Student::whereHas('enrollments', fn($q) => $q->where('estado', 'ACTIVO'))->count(),
+            'inactivos'     => Student::where('activo', false)->count(),
+        ];
+
+        return view('students.index', compact('students', 'stats'));
     }
 
     public function create()

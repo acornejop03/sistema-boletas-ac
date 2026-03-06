@@ -23,7 +23,8 @@ class SunatService
     public function __construct()
     {
         $certPath = base_path(config('sunat.cert_path'));
-        $this->see = new See($certPath);
+        $this->see = new See();
+        $this->see->setCertificate(file_get_contents($certPath));
         $this->see->setClaveSOL(
             config('sunat.sol_ruc'),
             config('sunat.sol_usuario'),
@@ -51,6 +52,32 @@ class SunatService
             $sale->nombre_xml = $xmlName;
             $sale->ruta_xml   = $xmlPath;
 
+            // BillResult solo tiene isSuccess() y getError()/getCdrResponse()
+            // getCode()/getDescription() están en CdrResponse (éxito) o Error (fallo)
+            if ($result->isSuccess()) {
+                $cdr     = $result->getCdrResponse();
+                $cdrZip  = $result->getCdrZip();
+                $cdrPath = "sunat/cdr/{$invoice->getName()}-CDR.zip";
+                Storage::put($cdrPath, $cdrZip);
+
+                $codigoResp = $cdr ? $cdr->getCode()        : '0';
+                $descResp   = $cdr ? $cdr->getDescription() : 'Aceptado';
+
+                $sale->estado_sunat      = 'ACEPTADO';
+                $sale->sunat_descripcion = $descResp;
+                $sale->hash_cpe          = $cdr ? $cdr->getId() : null;
+                $sale->ruta_cdr          = $cdrPath;
+            } else {
+                $error      = $result->getError();
+                $codigoResp = $error ? $error->getCode()    : '9999';
+                $descResp   = $error ? $error->getMessage() : 'Error desconocido';
+
+                $sale->estado_sunat      = 'RECHAZADO';
+                $sale->sunat_descripcion = $descResp . ' [Código: ' . $codigoResp . ']';
+            }
+
+            $sale->save();
+
             $response = new SunatResponse([
                 'sale_id'              => $sale->id,
                 'accion'               => 'ENVIO',
@@ -58,36 +85,16 @@ class SunatService
                     ? SunatEndpoints::FE_BETA
                     : SunatEndpoints::FE_PRODUCCION,
                 'xml_enviado'          => substr($xml, 0, 5000),
-                'codigo_respuesta'     => $result->getCode(),
-                'descripcion_respuesta'=> $result->getDescription(),
+                'codigo_respuesta'     => $codigoResp,
+                'descripcion_respuesta'=> $descResp,
                 'exitoso'              => $result->isSuccess(),
             ]);
-
-            if ($result->isSuccess()) {
-                $cdr     = $result->getCdrResponse();
-                $cdrZip  = $result->getCdrZip();
-                $cdrPath = "sunat/cdr/{$invoice->getName()}-CDR.zip";
-                Storage::put($cdrPath, $cdrZip);
-
-                $sale->estado_sunat      = 'ACEPTADO';
-                $sale->sunat_descripcion = $cdr->getDescription();
-                $sale->hash_cpe          = $result->getHash();
-                $sale->ruta_cdr          = $cdrPath;
-
-                $response->exitoso = true;
-            } else {
-                $sale->estado_sunat      = 'RECHAZADO';
-                $sale->sunat_descripcion = $result->getDescription() . ' Código: ' . $result->getCode();
-                $response->exitoso       = false;
-            }
-
-            $sale->save();
             $response->save();
 
             return [
                 'success'     => $result->isSuccess(),
-                'code'        => $result->getCode(),
-                'description' => $result->getDescription(),
+                'code'        => $codigoResp,
+                'description' => $descResp,
             ];
         } catch (\Exception $e) {
             Log::error('SunatService error: ' . $e->getMessage());
@@ -151,7 +158,7 @@ class SunatService
                 ->setPorcentajeIgv((float) $item->porcentaje_igv)
                 ->setIgv((float) $item->igv)
                 ->setMtoBaseIgv((float) $item->mto_base_igv)
-                ->setTotal((float) $item->total);
+                ->setTotalImpuestos((float) $item->igv);
             $details[] = $detail;
         }
 
@@ -174,6 +181,7 @@ class SunatService
             ->setMtoOperInafectas((float) $sale->mto_oper_inafectas)
             ->setMtoIGV((float) $sale->mto_igv)
             ->setValorVenta((float) $sale->valorventa)
+            ->setSubTotal((float) $sale->mto_imp_venta)
             ->setTotalImpuestos((float) $sale->total_impuestos)
             ->setMtoImpVenta((float) $sale->mto_imp_venta)
             ->setDetails($details)

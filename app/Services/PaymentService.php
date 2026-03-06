@@ -11,11 +11,14 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+// NubefactService se inyecta vía DI — no necesita import explícito (mismo namespace)
+
 class PaymentService
 {
     public function __construct(
-        private SunatService $sunatService,
-        private PdfService   $pdfService
+        private SunatService    $sunatService,
+        private NubefactService $nubefactService,
+        private PdfService      $pdfService
     ) {}
 
     public function cobrar(array $data, User $cajero): array
@@ -76,9 +79,11 @@ class PaymentService
 
             // Determinar serie según tipo de comprobante
             $tipoComprobante = $data['tipo_comprobante'] ?? '03';
-            $serie           = $tipoComprobante === '01'
-                ? $company->serie_factura
-                : $company->serie_boleta;
+            $serie = match ($tipoComprobante) {
+                '01'  => $company->serie_factura,
+                'NV'  => $company->serie_nota ?? 'NV01',
+                default => $company->serie_boleta,
+            };
 
             $correlativo = Sale::nextCorrelativo($company->id, $serie);
 
@@ -116,6 +121,10 @@ class PaymentService
             $descripcion = $this->buildDescripcion($data, $enrollment);
 
             // Crear SaleItem
+            // mto_base_igv = valorVenta para todo tipo de afectación:
+            // - Gravado (10): base imponible = valorVenta (sin IGV)
+            // - Exonerado (20): base exonerada = valorVenta (SUNAT requiere el monto)
+            // - Inafecto (30): base inafecta  = valorVenta
             SaleItem::create([
                 'sale_id'            => $sale->id,
                 'orden'              => 1,
@@ -125,7 +134,7 @@ class PaymentService
                 'valor_unitario'     => $valorVenta,
                 'precio_unitario'    => $total,
                 'mto_valor_venta'    => $valorVenta,
-                'mto_base_igv'       => $mtoGravadas,
+                'mto_base_igv'       => $valorVenta,
                 'porcentaje_igv'     => $tipoAfectacion === '10' ? config('sunat.igv', 18) : 0,
                 'igv'                => $mtoIgv,
                 'tipo_afectacion_igv'=> $tipoAfectacion,
@@ -135,8 +144,17 @@ class PaymentService
             // Recargar relaciones para SUNAT
             $sale->load(['company', 'student', 'items', 'payment']);
 
-            // Enviar a SUNAT
-            $sunatResult = $this->sunatService->emitir($sale);
+            // Enviar a SUNAT (solo boletas y facturas; nota de venta no va a SUNAT)
+            if ($tipoComprobante === 'NV') {
+                $sale->estado_sunat      = 'NO_APLICA';
+                $sale->sunat_descripcion = 'Nota de Venta — no requiere envío a SUNAT';
+                $sale->save();
+                $sunatResult = ['success' => true, 'code' => 'NV', 'description' => 'Nota de Venta emitida'];
+            } else {
+                $sunatResult = config('sunat.driver') === 'nubefact'
+                    ? $this->nubefactService->emitir($sale)
+                    : $this->sunatService->emitir($sale);
+            }
 
             // Generar PDF
             $this->pdfService->generate($sale);

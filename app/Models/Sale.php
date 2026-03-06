@@ -38,17 +38,22 @@ class Sale extends Model
 
     public function getTipoNombreAttribute(): string
     {
-        return $this->tipo_comprobante === '01' ? 'FACTURA' : 'BOLETA';
+        return match ($this->tipo_comprobante) {
+            '01'  => 'FACTURA',
+            'NV'  => 'NOTA DE VENTA',
+            default => 'BOLETA DE VENTA',
+        };
     }
 
     public function getEstadoBadgeAttribute(): string
     {
         return match ($this->estado_sunat) {
-            'ACEPTADO'  => '<span class="badge bg-success">Aceptado</span>',
-            'PENDIENTE' => '<span class="badge bg-warning text-dark">Pendiente</span>',
-            'RECHAZADO' => '<span class="badge bg-danger">Rechazado</span>',
-            'ANULADO'   => '<span class="badge bg-secondary">Anulado</span>',
-            default     => '<span class="badge bg-info">' . $this->estado_sunat . '</span>',
+            'ACEPTADO'   => '<span class="badge bg-success">Aceptado</span>',
+            'PENDIENTE'  => '<span class="badge bg-warning text-dark">Pendiente</span>',
+            'RECHAZADO'  => '<span class="badge bg-danger">Rechazado</span>',
+            'ANULADO'    => '<span class="badge bg-secondary">Anulado</span>',
+            'NO_APLICA'  => '<span class="badge bg-info text-dark">Nota de Venta</span>',
+            default      => '<span class="badge bg-info">' . $this->estado_sunat . '</span>',
         };
     }
 

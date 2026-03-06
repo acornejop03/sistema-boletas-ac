@@ -11,7 +11,7 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $this->authorize('ver cursos');
-        $query = Course::with('category');
+        $query = Course::with(['category', 'enrollments']);
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -23,8 +23,12 @@ class CourseController extends Controller
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
+        if ($request->filled('nivel')) {
+            $query->where('nivel', $request->nivel);
+        }
 
-        $courses    = $query->orderBy('nombre')->paginate(20)->withQueryString();
+        $perPage    = $request->view === 'list' ? 20 : 12;
+        $courses    = $query->orderBy('nombre')->paginate($perPage)->withQueryString();
         $categories = Category::where('activo', true)->orderBy('nombre')->get();
 
         return view('courses.index', compact('courses', 'categories'));

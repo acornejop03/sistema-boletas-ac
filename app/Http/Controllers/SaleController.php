@@ -47,7 +47,17 @@ class SaleController extends Controller
 
         $sales = $query->latest()->paginate(25)->withQueryString();
 
-        return view('sales.index', compact('sales'));
+        $stats = [
+            'total'      => Sale::count(),
+            'aceptados'  => Sale::where('estado_sunat', 'ACEPTADO')->count(),
+            'pendientes' => Sale::where('estado_sunat', 'PENDIENTE')->count(),
+            'monto_mes'  => Sale::whereMonth('fecha_emision', now()->month)
+                               ->whereYear('fecha_emision', now()->year)
+                               ->where('estado_sunat', '!=', 'ANULADO')
+                               ->sum('mto_imp_venta'),
+        ];
+
+        return view('sales.index', compact('sales', 'stats'));
     }
 
     public function show(Sale $sale)

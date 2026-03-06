@@ -21,6 +21,7 @@
 .payment-method-btn:hover { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
 .payment-method-btn.selected { border-color: #2563eb; background: #2563eb; color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
 .resumen-card { position: sticky; top: 70px; }
+@media (max-width: 991.98px) { .resumen-card { position: static; } }
 .step-badge {
     width: 26px; height: 26px; border-radius: 50%;
     background: #2563eb; color: #fff;
@@ -42,7 +43,7 @@
 <div class="row g-3">
 
 {{-- COLUMNA IZQUIERDA --}}
-<div class="col-lg-8">
+<div class="col-12 col-lg-8">
 
 {{-- PASO 1: BUSCAR ALUMNO --}}
 <div class="card mb-3">
@@ -189,7 +190,7 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="d-flex align-items-start gap-2 p-3 rounded-3 border cursor-pointer" style="cursor:pointer;transition:all 0.15s"
                        id="lblBoleta" onclick="selectComprobante('03')">
                     <input class="form-check-input mt-0 flex-shrink-0" type="radio" name="tipo_comprobante" id="boleta"
@@ -200,7 +201,7 @@
                     </div>
                 </label>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="d-flex align-items-start gap-2 p-3 rounded-3 border cursor-pointer" style="cursor:pointer;transition:all 0.15s"
                        id="lblFactura" onclick="selectComprobante('01')">
                     <input class="form-check-input mt-0 flex-shrink-0" type="radio" name="tipo_comprobante" id="factura"
@@ -211,6 +212,17 @@
                     </div>
                 </label>
             </div>
+            <div class="col-md-4">
+                <label class="d-flex align-items-start gap-2 p-3 rounded-3 border cursor-pointer" style="cursor:pointer;transition:all 0.15s"
+                       id="lblNota" onclick="selectComprobante('NV')">
+                    <input class="form-check-input mt-0 flex-shrink-0" type="radio" name="tipo_comprobante" id="notaVenta"
+                           value="NV" {{ old('tipo_comprobante')=='NV' ? 'checked' : '' }}>
+                    <div>
+                        <div class="fw-semibold"><i class="bi bi-file-earmark-minus me-1 text-success"></i>Nota de Venta</div>
+                        <div class="text-muted" style="font-size:0.78rem">Sin envío a SUNAT</div>
+                    </div>
+                </label>
+            </div>
         </div>
     </div>
 </div>
@@ -218,7 +230,7 @@
 </div>
 
 {{-- COLUMNA DERECHA: RESUMEN --}}
-<div class="col-lg-4">
+<div class="col-12 col-lg-4">
     <div class="card resumen-card border-0" id="sectionResumen" style="display:none;background:linear-gradient(145deg,#f0fdf4,#ecfeff)">
         <div class="card-hdr" style="background:transparent;border-bottom-color:#d1fae5">
             <div class="card-hdr-icon green"><i class="bi bi-clipboard-data"></i></div>
@@ -259,7 +271,7 @@
             <button type="submit" class="btn btn-success btn-lg w-100 fw-bold" id="btnSubmit">
                 <i class="bi bi-cash-coin me-2"></i>REGISTRAR COBRO
             </button>
-            <div class="text-center mt-2" style="font-size:0.72rem;color:#64748b">
+            <div class="text-center mt-2" style="font-size:0.72rem;color:#64748b" id="sunatNote">
                 <i class="bi bi-shield-check me-1 text-success"></i>Se enviará automáticamente a SUNAT
             </div>
         </div>
@@ -374,9 +386,16 @@ $('.payment-method-btn').click(function() {
 
 function selectComprobante(val) {
     $('input[name="tipo_comprobante"]').val([val]);
-    document.querySelectorAll('#lblBoleta,#lblFactura').forEach(l => l.classList.remove('border-primary','bg-primary-subtle'));
-    const target = val === '03' ? document.getElementById('lblBoleta') : document.getElementById('lblFactura');
+    document.querySelectorAll('#lblBoleta,#lblFactura,#lblNota').forEach(l => l.classList.remove('border-primary','bg-primary-subtle'));
+    const map = {'03': 'lblBoleta', '01': 'lblFactura', 'NV': 'lblNota'};
+    const target = document.getElementById(map[val]);
     if (target) { target.classList.add('border-primary','bg-primary-subtle'); }
+    const note = document.getElementById('sunatNote');
+    if (note) {
+        note.innerHTML = val === 'NV'
+            ? '<i class="bi bi-info-circle me-1 text-info"></i>Nota de Venta — no se envía a SUNAT'
+            : '<i class="bi bi-shield-check me-1 text-success"></i>Se enviará automáticamente a SUNAT';
+    }
 }
 
 function updateResumen() {
@@ -389,9 +408,9 @@ function updateResumen() {
 }
 
 $('#tipoPago').trigger('change');
-document.querySelectorAll('#lblBoleta,#lblFactura').forEach(lbl => {
+document.querySelectorAll('#lblBoleta,#lblFactura,#lblNota').forEach(lbl => {
     lbl.addEventListener('click', () => {
-        document.querySelectorAll('#lblBoleta,#lblFactura').forEach(l => l.classList.remove('border-primary','bg-primary-subtle'));
+        document.querySelectorAll('#lblBoleta,#lblFactura,#lblNota').forEach(l => l.classList.remove('border-primary','bg-primary-subtle'));
         lbl.classList.add('border-primary','bg-primary-subtle');
     });
 });

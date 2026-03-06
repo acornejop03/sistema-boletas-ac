@@ -13,32 +13,27 @@
 </div>
 
 {{-- FILTROS --}}
-<div class="card mb-4">
-    <div class="card-body py-2">
-        <form method="GET" class="row g-2 align-items-end">
-            <div class="col-sm-4 col-md-3">
-                <label class="form-label">Año</label>
-                <select name="year" class="form-select form-select-sm">
-                    @for($y = now()->year; $y >= now()->year - 3; $y--)
-                    <option value="{{ $y }}" {{ $year==$y?'selected':'' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-            </div>
-            <div class="col-sm-4 col-md-3">
-                <label class="form-label">Mes</label>
-                <select name="month" class="form-select form-select-sm">
-                    <option value="">Todos los meses</option>
-                    @foreach(['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] as $i => $mes)
-                    <option value="{{ $i+1 }}" {{ $month==$i+1?'selected':'' }}>{{ $mes }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-sm-4 col-md-2">
-                <label class="form-label d-none d-sm-block">&nbsp;</label>
-                <button class="btn btn-sm btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-            </div>
-        </form>
-    </div>
+<div class="filter-card mb-4">
+    <form method="GET" class="row g-2 align-items-center">
+        <div class="col-sm-4 col-md-3">
+            <select name="year" class="form-select form-select-sm">
+                @for($y = now()->year; $y >= now()->year - 3; $y--)
+                <option value="{{ $y }}" {{ $year==$y ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+        </div>
+        <div class="col-sm-4 col-md-3">
+            <select name="month" class="form-select form-select-sm">
+                <option value="">Todos los meses</option>
+                @foreach(['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] as $i => $mes)
+                <option value="{{ $i+1 }}" {{ $month==$i+1 ? 'selected' : '' }}>{{ $mes }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-sm-4 col-md-auto d-flex gap-2">
+            <button class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+        </div>
+    </form>
 </div>
 
 {{-- TOTAL CARD --}}
@@ -69,8 +64,12 @@
 
 {{-- TABLA --}}
 <div class="card">
-    <div class="card-header bg-white fw-semibold">
-        <i class="bi bi-table me-2 text-primary"></i>Detalle por periodo y tipo
+    <div class="card-hdr">
+        <div class="card-hdr-icon blue"><i class="bi bi-table"></i></div>
+        <div>
+            <div class="card-hdr-title">Detalle por periodo y tipo</div>
+            <div class="card-hdr-sub">{{ $ingresos->count() }} registro(s) encontrado(s)</div>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table mb-0">

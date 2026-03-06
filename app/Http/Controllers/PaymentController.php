@@ -24,6 +24,16 @@ class PaymentController extends Controller
             $query->where('user_id', auth()->id());
         }
 
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->whereHas('student', function ($s) use ($q) {
+                $s->where('nombres', 'like', "%{$q}%")
+                  ->orWhere('apellido_paterno', 'like', "%{$q}%")
+                  ->orWhere('apellido_materno', 'like', "%{$q}%")
+                  ->orWhere('codigo', 'like', "%{$q}%");
+            });
+        }
+
         if ($request->filled('fecha_desde')) {
             $query->where('fecha_pago', '>=', $request->fecha_desde);
         }

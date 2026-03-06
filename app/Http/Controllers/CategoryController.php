@@ -10,7 +10,7 @@ class CategoryController extends Controller
     public function index()
     {
         $this->authorize('ver cursos');
-        $categories = Category::withCount('courses')->orderBy('nombre')->paginate(20);
+        $categories = Category::withCount('courses')->with('courses')->orderBy('nombre')->paginate(20);
         return view('categories.index', compact('categories'));
     }
 

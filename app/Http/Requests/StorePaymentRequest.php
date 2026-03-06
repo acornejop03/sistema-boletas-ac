@@ -22,7 +22,7 @@ class StorePaymentRequest extends FormRequest
             'forma_pago'       => ['required', 'in:EFECTIVO,TARJETA,TRANSFERENCIA,YAPE,PLIN'],
             'numero_operacion' => ['required_if:forma_pago,TRANSFERENCIA', 'nullable', 'string', 'max:50'],
             'monto'            => ['required', 'numeric', 'min:1'],
-            'tipo_comprobante' => ['required', 'in:01,03'],
+            'tipo_comprobante' => ['required', 'in:01,03,NV'],
             'observaciones'    => ['nullable', 'string', 'max:500'],
         ];
     }

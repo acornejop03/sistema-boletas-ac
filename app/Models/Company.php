@@ -11,7 +11,7 @@ class Company extends Model
         'ruc', 'razon_social', 'nombre_comercial', 'ubigeo',
         'departamento', 'provincia', 'distrito', 'direccion',
         'urbanizacion', 'pais', 'telefono', 'email', 'logo_path',
-        'serie_boleta', 'serie_factura', 'activo',
+        'serie_boleta', 'serie_factura', 'serie_nota', 'activo',
     ];
 
     protected $casts = [

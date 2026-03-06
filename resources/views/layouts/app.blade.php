@@ -292,7 +292,20 @@
             .page-header { flex-direction: column; align-items: flex-start; }
             .table th, .table td { font-size: 0.77rem; padding: 0.52rem 0.65rem; }
             .content-area { padding: 0.75rem; }
+            .filter-card .row { --bs-gutter-y: 0.5rem; }
+            .btn-act { width: 28px; height: 28px; font-size: 0.75rem; }
         }
+        /* Ensure filter inputs never overflow on narrow screens */
+        .filter-card select, .filter-card input { min-width: 0; }
+        /* Tables: prevent horizontal overflow bleed */
+        .table-responsive { border-radius: 0 0 12px 12px; }
+
+        /* ══ PAGINATION ══ */
+        .page-link:hover {
+            background: #eff6ff !important; color: #2563eb !important;
+            border-color: #bfdbfe !important;
+        }
+        .pagination { --bs-pagination-focus-box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
         /* ══ SCROLLBAR ══ */
         #sidebar::-webkit-scrollbar { width: 3px; }
@@ -468,6 +481,19 @@
                 <span id="topbar-clock">{{ now()->format('d/m/Y H:i') }}</span>
             </div>
             <div class="topbar-divider d-none d-md-block"></div>
+
+            {{-- Notificación SUNAT pendientes --}}
+            @php $sunatPend = \App\Models\Sale::where('estado_sunat','PENDIENTE')->count(); @endphp
+            @if($sunatPend > 0)
+            <a href="{{ route('reports.pendientesSunat') }}"
+               style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;text-decoration:none;transition:background 0.15s"
+               title="{{ $sunatPend }} comprobante(s) pendiente(s) de envío a SUNAT">
+                <i class="bi bi-cloud-slash" style="font-size:1rem"></i>
+                <span style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#dc2626;color:#fff;font-size:0.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff">{{ $sunatPend }}</span>
+            </a>
+            @endif
+
+            <div class="topbar-divider"></div>
             <div class="topbar-profile">
                 <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name,0,2)) }}</div>
                 <div class="d-none d-lg-block">
@@ -511,6 +537,24 @@
     <div class="content-area">
         @yield('content')
     </div>
+
+    {{-- FAB: Nuevo Cobro (solo para cajeros y admins con permiso) --}}
+    @can('crear cobros')
+    @if(!request()->routeIs('payments.create'))
+    <a href="{{ route('payments.create') }}"
+       style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;
+              width:52px;height:52px;border-radius:50%;
+              background:linear-gradient(135deg,#16a34a,#15803d);
+              color:#fff;display:flex;align-items:center;justify-content:center;
+              font-size:1.4rem;box-shadow:0 4px 20px rgba(21,128,61,0.45);
+              text-decoration:none;transition:all 0.2s;border:3px solid rgba(255,255,255,0.25)"
+       title="Nuevo Cobro"
+       onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 8px 28px rgba(21,128,61,0.55)'"
+       onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(21,128,61,0.45)'">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+    @endif
+    @endcan
 </div>
 
 @else

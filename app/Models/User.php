@@ -14,6 +14,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password',
         'telefono', 'activo', 'ultimo_acceso',
+        'login_intentos', 'bloqueado_hasta', 'ultimo_ip',
     ];
 
     /**
@@ -38,6 +39,7 @@ class User extends Authenticatable
             'password'          => 'hashed',
             'activo'            => 'boolean',
             'ultimo_acceso'     => 'datetime',
+            'bloqueado_hasta'   => 'datetime',
         ];
     }
 }
