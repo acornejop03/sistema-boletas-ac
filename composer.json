@@ -84,6 +84,10 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "ext-soap": "8.2",
+            "ext-gd": "8.2"
         }
     },
     "minimum-stability": "stable",
